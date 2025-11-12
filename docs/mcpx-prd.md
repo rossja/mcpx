@@ -19,12 +19,14 @@ Create a production-ready MCP server that exposes tools via HTTPS, enabling AI a
 ### Goals
 - Provide a secure, production-grade MCP server accessible over HTTPS
 - Implement streaming HTTP support for efficient bi-directional communication
+- Support flexible authentication (noauth for testing, OAuth 2.0 for production)
 - Create a foundation for extensible tool development
 - Demonstrate best practices for MCP server deployment
 
 ### Success Criteria
 - Server successfully handles MCP protocol requests over HTTPS
 - All initial tools function correctly and reliably
+- Authentication modes (noauth and OAuth) work correctly
 - SSL certificates auto-renew without manual intervention
 - Server can handle concurrent connections from multiple clients
 - Response times meet acceptable thresholds (< 500ms for non-API tools)
@@ -49,9 +51,106 @@ Client (AI Assistant)
 nginx (Reverse Proxy + SSL Termination)
     ↓ HTTP
 Python MCP Server (FastMCP)
+    ↓ Authentication Layer (OAuth/noauth)
     ↓
 Tool Implementations
 ```
+
+### Authentication Requirements
+
+The server must support two authentication modes to accommodate different use cases:
+
+#### Mode 1: No Authentication (noauth)
+**Purpose**: Development, testing, and trusted internal networks
+
+**Specifications**:
+- No authentication required for any endpoint
+- All tools accessible without credentials
+- Enabled via configuration flag: `AUTH_MODE=noauth`
+- Should log warning at startup when running in noauth mode
+- **Security Warning**: Only use in trusted environments
+
+**Use Cases**:
+- Local development
+- Internal testing
+- Trusted network deployments
+- Proof of concept demos
+
+#### Mode 2: OAuth 2.0 Single-User
+**Purpose**: Production deployments requiring authentication
+
+**Specifications**:
+- OAuth 2.0 Authorization Code Flow with PKCE
+- Single user authentication (extensible to multi-user in future)
+- SQLite database for user storage
+- Password hashing using bcrypt (minimum cost factor 12)
+- JWT tokens for session management
+- Token expiration and refresh capability
+- Enabled via configuration flag: `AUTH_MODE=oauth`
+
+**Default User Credentials**:
+- Username: `mcpuser`
+- Password: `OMG!letmein`
+- Stored securely with bcrypt hashing
+
+**OAuth Endpoints**:
+- `GET /oauth/authorize` - Authorization endpoint
+- `POST /oauth/token` - Token endpoint  
+- `POST /oauth/revoke` - Token revocation endpoint
+- `GET /oauth/userinfo` - User information endpoint (optional)
+
+**Token Specifications**:
+- Access token lifetime: 1 hour (configurable)
+- Refresh token lifetime: 30 days (configurable)
+- JWT algorithm: HS256 or RS256
+- Token includes claims: `sub` (user_id), `exp`, `iat`, `scope`
+
+**Security Requirements**:
+- HTTPS required for OAuth mode
+- PKCE (Proof Key for Code Exchange) required
+- State parameter required to prevent CSRF
+- Secure token storage recommendations documented
+- Rate limiting on authentication endpoints
+
+**Database Schema**:
+```sql
+CREATE TABLE users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_login TIMESTAMP
+);
+
+CREATE TABLE oauth_tokens (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    access_token TEXT UNIQUE NOT NULL,
+    refresh_token TEXT UNIQUE NOT NULL,
+    access_token_expires_at TIMESTAMP NOT NULL,
+    refresh_token_expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE oauth_auth_codes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT UNIQUE NOT NULL,
+    user_id INTEGER NOT NULL,
+    client_id TEXT NOT NULL,
+    redirect_uri TEXT NOT NULL,
+    code_challenge TEXT NOT NULL,
+    code_challenge_method TEXT NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    used INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+```
+
+**Configuration Precedence**:
+1. Environment variable `AUTH_MODE`
+2. Default to `oauth` for production safety
 
 ### Infrastructure Requirements
 
@@ -293,12 +392,17 @@ All Python dependencies must be managed through uv:
 - **Monitoring**: Health check endpoint for monitoring systems
 
 ### Security
-- **HTTPS Only**: All connections must use HTTPS
+- **HTTPS Only**: All connections must use HTTPS (especially required for OAuth mode)
+- **Authentication**: Support noauth (development) and OAuth 2.0 (production)
+- **Password Security**: bcrypt hashing with minimum cost factor 12
+- **Token Security**: JWT tokens with expiration and secure generation
 - **Certificate Management**: Automated renewal of SSL certificates
 - **Input Validation**: All tool inputs must be validated
-- **Rate Limiting**: Implement rate limiting to prevent abuse
+- **Rate Limiting**: Implement rate limiting to prevent abuse (especially on auth endpoints)
 - **API Key Management**: Secure storage of API keys (environment variables)
 - **Header Sanitization**: Prevent header injection attacks
+- **CSRF Protection**: State parameter in OAuth flow
+- **PKCE**: Required for OAuth authorization code flow
 
 ### Scalability
 - **Horizontal Scaling**: Architecture should support multiple instances behind load balancer (future consideration)
@@ -320,6 +424,13 @@ All Python dependencies must be managed through uv:
 MCP_SERVER_HOST=0.0.0.0
 MCP_SERVER_PORT=8000
 MCP_SERVER_NAME=mcpx.lol
+
+# Authentication Configuration
+AUTH_MODE=oauth                    # Options: noauth, oauth
+AUTH_DB_PATH=./data/auth.db        # Path to SQLite database
+JWT_SECRET_KEY=<random-secret>     # Secret key for JWT signing
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=60 # Access token expiration (default: 60)
+JWT_REFRESH_TOKEN_EXPIRE_DAYS=30   # Refresh token expiration (default: 30)
 
 # API Keys
 OPENAI_API_KEY=sk-...
@@ -353,11 +464,19 @@ mcpx-server/
 ├── README.md               # Project documentation
 ├── .env.example            # Example environment variables
 ├── .gitignore             
+├── data/
+│   └── auth.db             # SQLite database (created at runtime)
 ├── src/
 │   ├── __init__.py
 │   ├── main.py             # Application entry point
 │   ├── config.py           # Configuration management
 │   ├── server.py           # MCP server implementation
+│   ├── auth/
+│   │   ├── __init__.py
+│   │   ├── oauth.py        # OAuth 2.0 implementation
+│   │   ├── database.py     # Database models and operations
+│   │   ├── middleware.py   # Authentication middleware
+│   │   └── utils.py        # Password hashing, token generation
 │   └── tools/
 │       ├── __init__.py
 │       ├── echo.py
@@ -368,7 +487,8 @@ mcpx-server/
 ├── tests/
 │   ├── __init__.py
 │   ├── test_tools.py
-│   └── test_server.py
+│   ├── test_server.py
+│   └── test_auth.py        # Authentication tests
 └── deployment/
     ├── nginx.conf          # nginx configuration
     ├── systemd.service     # systemd service file
@@ -432,18 +552,20 @@ mcpx-server/
 ## Future Considerations
 
 ### Phase 2 Features (Out of Scope for v1.0)
-- Authentication and authorization
+- Multi-user authentication with role-based access control (RBAC)
 - Additional tools (file operations, database queries, etc.)
 - WebSocket support for bi-directional streaming
-- Admin dashboard
+- Admin dashboard for user management
 - Usage analytics and metrics
 - Load balancing for high availability
 - Docker containerization
 - Kubernetes deployment
 
 ### Potential Enhancements
+- OAuth 2.0 client registration and management
+- SSO integration (SAML, OpenID Connect)
 - Caching layer for weather/search results
-- Tool usage analytics
+- Tool usage analytics per user
 - Custom tool marketplace/plugin system
 - Multi-region deployment
 - GraphQL API in addition to MCP
@@ -479,3 +601,4 @@ mcpx-server/
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 2025-11-12 | [Your Name] | Initial PRD creation |
+| 1.1 | 2025-11-12 | [Your Name] | Added authentication requirements (noauth and OAuth 2.0) |
