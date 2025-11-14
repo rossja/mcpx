@@ -1,94 +1,76 @@
-# MCPX HTTP MCP Server
+# MCPX — Adversarial MCP Server for AI Red-Teaming
 
-A production-ready MCP (Model Context Protocol) server that exposes utility tools over HTTPS. Built with Python, FastMCP, and modern tooling.
+A production-ready MCP (Model Context Protocol) server designed for safe adversarial testing and evaluation of AI tool integration. Built with Python, FastMCP, and modern tooling.
+
+## Purpose
+
+**mcpx is a controlled environment for testing how AI systems behave when connected to external tools.** The goal is to help safety teams, researchers, and platform engineers evaluate robustness, authentication flows, error handling, and edge cases in tool-augmented AI systems.
+
+This is the foundation for building adversarial test scenarios — currently providing working utility tools that can be extended or configured to test various failure modes, security controls, and AI system behaviors.
 
 ## Features
 
+- 🎯 **Adversarial Testing Platform**: Foundation for AI red-teaming and safety evaluation
 - 🚀 **5 Utility Tools**: Echo, Weather, Web Search, IP Lookup, and Request Info
 - 🔒 **HTTPS Support**: Full SSL/TLS with Let's Encrypt integration
-- 🔐 **Authentication**: Flexible auth modes (noauth for dev, OAuth 2.0 for production)
+- 🔐 **OAuth 2.0 Authentication**: Test auth flows, token management, and access control
 - 📡 **Streaming HTTP**: Efficient bi-directional communication
 - 🐍 **Modern Python**: Built with Python 3.12+ and uv package manager
 - 🔧 **Production Ready**: nginx reverse proxy, systemd service, auto-renewal
 - ✅ **Tested**: Unit tests for all tools
 
+## Use Cases
+
+### Safety & Red-Teaming
+- Test how AI systems handle authentication failures and token expiration
+- Evaluate behavior with rate-limited or slow-responding tools
+- Test data handling and information disclosure scenarios
+- Validate refusal behaviors and escalation flows
+
+### Eval & Research Teams
+- Build reproducible test scenarios around MCP tool interactions
+- Measure AI system robustness to tool errors and edge cases
+- Create benchmarks for tool integration safety
+- Study model behavior with external data sources
+
+### Platform Engineers
+- Validate OAuth 2.0 client implementations
+- Test MCP protocol integration and error handling
+- Evaluate logging, monitoring, and observability
+- Stress-test tool orchestration and sandboxing
+
 ## Tools
 
+The server currently provides 5 utility tools that serve as the foundation for adversarial testing scenarios:
+
 ### 1. Echo (`echo`)
-Simple diagnostic tool that returns the input exactly as provided.
+Simple diagnostic tool that returns the input exactly as provided. Useful for testing basic connectivity and data flow.
 
 **Parameters:**
 - `message` (string, required): The text to echo back
 
-**Example:**
-```json
-{
-  "tool": "echo",
-  "parameters": {
-    "message": "Hello, MCP!"
-  }
-}
-```
-
 ### 2. Weather Lookup (`get_weather`)
-Retrieve current weather information for a US ZIP code.
+Retrieve current weather information for a US ZIP code. Tests external API integration and data handling.
 
 **Parameters:**
 - `zip_code` (string, required): 5-digit US ZIP code
 
-**Example:**
-```json
-{
-  "tool": "get_weather",
-  "parameters": {
-    "zip_code": "10001"
-  }
-}
-```
-
 ### 3. Web Search (`web_search`)
-Search the web using OpenAI's capabilities.
+Search the web using OpenAI's capabilities. Tests information retrieval and content handling.
 
 **Parameters:**
 - `query` (string, required): Search query
 - `max_results` (integer, optional): Maximum results (default: 5)
 
-**Example:**
-```json
-{
-  "tool": "web_search",
-  "parameters": {
-    "query": "Model Context Protocol",
-    "max_results": 3
-  }
-}
-```
-
 ### 4. Source IP Lookup (`get_source_ip`)
-Display the client's apparent IP address.
+Display the client's apparent IP address. Tests request metadata exposure.
 
 **Parameters:** None
-
-**Example:**
-```json
-{
-  "tool": "get_source_ip",
-  "parameters": {}
-}
-```
 
 ### 5. Request Information (`get_request_info`)
-Display comprehensive request metadata including headers and connection info.
+Display comprehensive request metadata including headers and connection info. Tests observability and information disclosure.
 
 **Parameters:** None
-
-**Example:**
-```json
-{
-  "tool": "get_request_info",
-  "parameters": {}
-}
-```
 
 ## Authentication
 
@@ -511,9 +493,35 @@ sudo certbot certificates
    ```
    ⚠️ Only use in development/testing!
 
+## Safety & Ethics
+
+**This project is explicitly scoped for defensive use:** understanding and improving the robustness of AI systems, not breaking things in production.
+
+### What mcpx is NOT
+- ❌ Not a malware distribution platform
+- ❌ Not a vulnerability marketplace
+- ❌ Not a way to attack real users or infrastructure
+
+### What mcpx IS
+- ✅ A controlled environment for AI safety research
+- ✅ A foundation for building adversarial test scenarios
+- ✅ A tool for evaluating and improving AI system robustness
+- ✅ A platform for testing MCP client implementations
+
+**Intended for:** Research teams, safety engineers, and platform developers working to make AI systems more robust and secure.
+
+## Roadmap
+
+Future enhancements planned:
+- 🎭 Configurable adversarial behaviors (delayed responses, malformed data, etc.)
+- 📦 Scenario packs for common failure modes
+- 🔬 Eval harness integrations
+- 📊 Built-in logging and telemetry for test scenarios
+- 🧪 Additional tools designed for specific test cases
+
 ## Contributing
 
-Contributions are welcome! Please:
+Contributions are welcome, especially in the areas of adversarial scenarios, safety testing, and evaluation frameworks. Please:
 
 1. Fork the repository
 2. Create a feature branch
