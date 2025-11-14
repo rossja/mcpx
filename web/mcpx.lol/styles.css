@@ -229,60 +229,196 @@ body {
   gap: 18px;
 }
 
-.orb {
+.hex-container {
   position: relative;
   width: 220px;
   height: 220px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  background: radial-gradient(circle at 30% 20%, #ffffff, #3dfaff 40%, #05040b 70%);
-  box-shadow:
-    0 0 50px rgba(61, 250, 255, 0.7),
-    0 0 90px rgba(140, 82, 255, 0.6);
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.orb-core {
-  width: 40%;
-  height: 40%;
-  border-radius: 50%;
-  background: radial-gradient(circle at 30% 20%, #fff, var(--accent-pink));
-  box-shadow:
-    0 0 25px rgba(255, 79, 216, 0.9),
-    0 0 55px rgba(61, 250, 255, 0.7);
-}
-
-.orb-ring {
+.hex-glow {
   position: absolute;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(61, 250, 255, 0.3), transparent 70%);
+  animation: pulse 4s ease-in-out infinite;
+  filter: blur(30px);
+}
+
+.hex-svg {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  filter: drop-shadow(0 0 20px rgba(61, 250, 255, 0.5));
+  animation: float 6s ease-in-out infinite;
+  z-index: 2;
+}
+
+.hex {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.hex-outer {
+  stroke: url(#hexGrad);
+  stroke-width: 2.5;
+  animation: hexRotate 20s linear infinite;
+  transform-origin: center;
+  stroke-dasharray: 400;
+  stroke-dashoffset: 0;
+  animation: hexRotate 20s linear infinite, hexDash 8s ease-in-out infinite;
+}
+
+.hex-mid {
+  stroke: rgba(140, 82, 255, 0.8);
+  stroke-width: 2;
+  animation: hexRotateReverse 15s linear infinite;
+  transform-origin: center;
+}
+
+.hex-inner {
+  stroke: rgba(255, 79, 216, 0.6);
+  stroke-width: 1.5;
+  animation: hexRotate 12s linear infinite;
+  transform-origin: center;
+}
+
+.hex-core {
+  fill: url(#hexGrad);
+  animation: corePulse 3s ease-in-out infinite;
+  filter: drop-shadow(0 0 8px rgba(61, 250, 255, 0.9));
+}
+
+.particles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: radial-gradient(circle, var(--accent-cyan), transparent);
   border-radius: 50%;
-  border: 1px solid rgba(5, 4, 11, 0.4);
-  mix-blend-mode: screen;
+  opacity: 0;
+  animation: particleFloat 5s ease-in-out infinite;
 }
 
-.orb-ring-1 {
-  width: 80%;
-  height: 80%;
-  border-color: rgba(61, 250, 255, 0.7);
-  animation: spin 24s linear infinite;
+.particle:nth-child(1) {
+  left: 20%;
+  top: 30%;
+  animation-delay: 0s;
+  animation-duration: 6s;
 }
 
-.orb-ring-2 {
-  width: 110%;
-  height: 110%;
-  border-color: rgba(255, 79, 216, 0.4);
-  animation: spinReverse 32s linear infinite;
+.particle:nth-child(2) {
+  left: 75%;
+  top: 20%;
+  animation-delay: 1.2s;
+  animation-duration: 5.5s;
 }
 
-@keyframes spin {
-  to {
+.particle:nth-child(3) {
+  left: 60%;
+  top: 70%;
+  animation-delay: 2.4s;
+  animation-duration: 7s;
+}
+
+.particle:nth-child(4) {
+  left: 15%;
+  top: 65%;
+  animation-delay: 3.6s;
+  animation-duration: 6.5s;
+}
+
+.particle:nth-child(5) {
+  left: 85%;
+  top: 50%;
+  animation-delay: 4.8s;
+  animation-duration: 5s;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.6;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes hexRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
     transform: rotate(360deg);
   }
 }
 
-@keyframes spinReverse {
-  to {
+@keyframes hexRotateReverse {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
     transform: rotate(-360deg);
+  }
+}
+
+@keyframes hexDash {
+  0%, 100% {
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dashoffset: 200;
+  }
+}
+
+@keyframes corePulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.8;
+  }
+}
+
+@keyframes particleFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-20px) scale(1);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-80px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100px) scale(0);
   }
 }
 
@@ -407,6 +543,75 @@ body {
   margin-top: 12px;
   font-size: 0.78rem;
   color: var(--muted);
+}
+
+/* Tools Section */
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+  margin-top: 12px;
+}
+
+.tool-card {
+  background: var(--bg-alt);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-subtle);
+  padding: 18px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: 
+    border-color 0.3s ease,
+    transform 0.2s ease,
+    box-shadow 0.3s ease;
+}
+
+.tool-card:hover {
+  border-color: rgba(61, 250, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 0 20px rgba(0, 0, 0, 0.45),
+    0 0 30px rgba(61, 250, 255, 0.15);
+}
+
+.tool-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(61, 250, 255, 0.15), rgba(140, 82, 255, 0.15));
+  border: 1px solid rgba(61, 250, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-cyan);
+}
+
+.tool-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--fg);
+}
+
+.tool-name {
+  font-family: "DM Mono", ui-monospace, monospace;
+  font-size: 0.8rem;
+  color: var(--accent-purple);
+  background: rgba(140, 82, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  align-self: flex-start;
+  margin: 0;
+}
+
+.tool-desc {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.5;
 }
 
 /* Timeline */
