@@ -2,11 +2,11 @@
 
 import pytest
 from unittest.mock import Mock, AsyncMock, patch
-from src.tools.echo import echo
-from src.tools.weather import get_weather
-from src.tools.web_search import web_search
-from src.tools.ip_lookup import get_source_ip
-from src.tools.request_info import get_request_info
+from mcp_server.tools.echo import echo
+from mcp_server.tools.weather import get_weather
+from mcp_server.tools.web_search import web_search
+from mcp_server.tools.ip_lookup import get_source_ip
+from mcp_server.tools.request_info import get_request_info
 
 
 @pytest.mark.asyncio
@@ -44,7 +44,7 @@ async def test_weather_no_api_key():
     """Test weather tool without API key configured."""
     context = Mock()
     
-    with patch("src.tools.weather.config") as mock_config:
+    with patch("mcp_server.tools.weather.config") as mock_config:
         mock_config.WEATHER_API_KEY = None
         result = await get_weather("10001", context)
         assert "WEATHER_API_KEY" in result or "unavailable" in result.lower()
@@ -55,7 +55,7 @@ async def test_web_search_no_api_key():
     """Test web search without API key."""
     context = Mock()
     
-    with patch("src.tools.web_search.config") as mock_config:
+    with patch("mcp_server.tools.web_search.config") as mock_config:
         mock_config.OPENAI_API_KEY = None
         with pytest.raises(RuntimeError, match="OpenAI API key not configured"):
             await web_search("test query", 5, context)
@@ -68,7 +68,7 @@ async def test_get_source_ip_no_context():
     context.request_context = None
     context._request = None
     
-    with patch("src.tools.ip_lookup._get_request_from_context", return_value=None):
+    with patch("mcp_server.tools.ip_lookup._get_request_from_context", return_value=None):
         result = await get_source_ip(context)
         assert "Unable to determine" in result
 
@@ -94,7 +94,7 @@ async def test_get_request_info_no_context():
     context = Mock()
     context.request_context = None
     
-    with patch("src.tools.request_info._get_request_from_context", return_value=None):
+    with patch("mcp_server.tools.request_info._get_request_from_context", return_value=None):
         result = await get_request_info(context)
         assert "Unable to retrieve" in result
 
@@ -123,7 +123,7 @@ async def test_get_request_info_with_request():
     
     context = Mock()
     
-    with patch("src.tools.request_info._get_request_from_context", return_value=mock_request):
+    with patch("mcp_server.tools.request_info._get_request_from_context", return_value=mock_request):
         result = await get_request_info(context)
         assert "POST" in result
         assert "/test" in result

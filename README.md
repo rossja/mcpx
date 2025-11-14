@@ -209,7 +209,7 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 
 4. **Run the server:**
    ```bash
-   uv run python -m src.main
+   uv run python -m mcp_server.main
    ```
 
 The server will start on `http://localhost:8000` by default.
@@ -223,9 +223,13 @@ mcpx/
 ├── pyproject.toml          # uv project configuration
 ├── .env.example            # Example environment variables
 ├── .gitignore             
+├── README.md
+├── AUTHENTICATION.md       # Authentication documentation
+├── DEPLOYMENT.md           # Deployment guide
+├── LICENSE
 ├── data/
 │   └── auth.db             # SQLite database (created at runtime)
-├── src/
+├── mcp_server/             # MCP server application code
 │   ├── __init__.py
 │   ├── main.py             # Application entry point
 │   ├── config.py           # Configuration management
@@ -243,12 +247,19 @@ mcpx/
 │       ├── web_search.py
 │       ├── ip_lookup.py
 │       └── request_info.py
-├── tests/
+├── web/                    # Web assets (marketing site, etc.)
+│   └── mcpx.lol/
+│       ├── index.html
+│       ├── script.js
+│       └── styles.css
+├── tests/                  # Tests mirror mcp-server structure
 │   ├── __init__.py
 │   ├── test_tools.py
 │   ├── test_server.py
 │   └── test_auth.py        # Authentication tests
-└── deployment/
+├── docs/                   # Documentation
+│   └── mcpx-prd.md
+└── deployment/             # Deployment configurations
     ├── nginx.conf          # nginx configuration
     ├── systemd.service     # systemd service file
     └── setup.sh            # Deployment script
@@ -261,7 +272,7 @@ mcpx/
 uv run pytest
 
 # Run with coverage
-uv run pytest --cov=src
+uv run pytest --cov=mcp_server
 
 # Run specific test file
 uv run pytest tests/test_tools.py
@@ -486,7 +497,7 @@ sudo certbot certificates
    ls -la ./data/auth.db
    
    # If missing, restart server to initialize
-   uv run python -m src.main
+   uv run python -m mcp_server.main
    ```
 
 4. **"Token expired" errors:**

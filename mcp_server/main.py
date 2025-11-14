@@ -32,7 +32,7 @@ def main():
     # Run the server with uvicorn
     import uvicorn
     uvicorn.run(
-        mcp.get_asgi_app(),
+        mcp.streamable_http_app(),
         host=config.HOST,
         port=config.PORT,
         log_level=config.LOG_LEVEL.lower(),

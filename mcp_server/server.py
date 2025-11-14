@@ -116,18 +116,25 @@ def get_server():
     # Validate configuration
     config.validate()
     
-    # Get the underlying ASGI app
-    app = mcp.get_asgi_app()
+    # Get the underlying Starlette ASGI app
+    app = mcp.streamable_http_app()
     
     # Add OAuth routes if in OAuth mode
     if config.AUTH_MODE == "oauth":
+        from fastapi import FastAPI
         from .auth.oauth import oauth_router
         from .auth.middleware import AuthenticationMiddleware
         
         logger.info("Adding OAuth routes and authentication middleware")
         
-        # Include OAuth router
-        app.include_router(oauth_router)
+        # Create a FastAPI app for OAuth routes
+        # The oauth_router already has /oauth prefix, so mount at root
+        oauth_app = FastAPI()
+        oauth_app.include_router(oauth_router)
+        
+        # Mount the OAuth app onto the Starlette app at root
+        # This preserves the /oauth prefix from the router
+        app.mount("", oauth_app)
         
         # Add authentication middleware
         app.add_middleware(AuthenticationMiddleware)

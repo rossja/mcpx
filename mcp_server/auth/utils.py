@@ -4,7 +4,7 @@ import secrets
 import hashlib
 import base64
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from typing import Optional, Dict, Any
 
 import bcrypt
@@ -38,14 +38,14 @@ def generate_random_token(length: int = 32) -> str:
 
 def create_access_token(user_id: int, username: str) -> str:
     """Create a JWT access token."""
-    expires_at = datetime.utcnow() + timedelta(minutes=config.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
+    expires_at = datetime.now(UTC) + timedelta(minutes=config.JWT_ACCESS_TOKEN_EXPIRE_MINUTES)
     
     payload = {
         "sub": str(user_id),
         "username": username,
         "type": "access",
         "exp": expires_at,
-        "iat": datetime.utcnow(),
+        "iat": datetime.now(UTC),
     }
     
     token = jwt.encode(payload, config.JWT_SECRET_KEY, algorithm=config.JWT_ALGORITHM)
@@ -54,14 +54,14 @@ def create_access_token(user_id: int, username: str) -> str:
 
 def create_refresh_token(user_id: int, username: str) -> str:
     """Create a JWT refresh token."""
-    expires_at = datetime.utcnow() + timedelta(days=config.JWT_REFRESH_TOKEN_EXPIRE_DAYS)
+    expires_at = datetime.now(UTC) + timedelta(days=config.JWT_REFRESH_TOKEN_EXPIRE_DAYS)
     
     payload = {
         "sub": str(user_id),
         "username": username,
         "type": "refresh",
         "exp": expires_at,
-        "iat": datetime.utcnow(),
+        "iat": datetime.now(UTC),
     }
     
     token = jwt.encode(payload, config.JWT_SECRET_KEY, algorithm=config.JWT_ALGORITHM)

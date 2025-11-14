@@ -3,9 +3,9 @@
 import pytest
 import tempfile
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 
-from src.auth.utils import (
+from mcp_server.auth.utils import (
     hash_password,
     verify_password,
     create_access_token,
@@ -14,7 +14,7 @@ from src.auth.utils import (
     generate_auth_code,
     verify_code_challenge,
 )
-from src.auth.database import (
+from mcp_server.auth.database import (
     init_database,
     create_default_user,
     get_user_by_username,
@@ -28,7 +28,7 @@ from src.auth.database import (
     revoke_token,
     revoke_refresh_token,
 )
-from src.config import config
+from mcp_server.config import config
 
 
 @pytest.fixture
@@ -213,7 +213,7 @@ class TestDatabase:
         user = get_user_by_username("mcpuser")
         
         code = generate_auth_code()
-        expires_at = datetime.utcnow() + timedelta(minutes=10)
+        expires_at = datetime.now(UTC) + timedelta(minutes=10)
         
         save_auth_code(
             code=code,
@@ -238,7 +238,7 @@ class TestDatabase:
         user = get_user_by_username("mcpuser")
         
         code = generate_auth_code()
-        expires_at = datetime.utcnow() + timedelta(minutes=10)
+        expires_at = datetime.now(UTC) + timedelta(minutes=10)
         
         save_auth_code(
             code=code,
@@ -263,8 +263,8 @@ class TestDatabase:
         access_token = create_access_token(user["id"], user["username"])
         refresh_token = create_refresh_token(user["id"], user["username"])
         
-        access_expires_at = datetime.utcnow() + timedelta(hours=1)
-        refresh_expires_at = datetime.utcnow() + timedelta(days=30)
+        access_expires_at = datetime.now(UTC) + timedelta(hours=1)
+        refresh_expires_at = datetime.now(UTC) + timedelta(days=30)
         
         save_tokens(
             user_id=user["id"],
@@ -289,8 +289,8 @@ class TestDatabase:
         access_token = create_access_token(user["id"], user["username"])
         refresh_token = create_refresh_token(user["id"], user["username"])
         
-        access_expires_at = datetime.utcnow() + timedelta(hours=1)
-        refresh_expires_at = datetime.utcnow() + timedelta(days=30)
+        access_expires_at = datetime.now(UTC) + timedelta(hours=1)
+        refresh_expires_at = datetime.now(UTC) + timedelta(days=30)
         
         save_tokens(
             user_id=user["id"],
@@ -313,8 +313,8 @@ class TestDatabase:
         access_token = create_access_token(user["id"], user["username"])
         refresh_token = create_refresh_token(user["id"], user["username"])
         
-        access_expires_at = datetime.utcnow() + timedelta(hours=1)
-        refresh_expires_at = datetime.utcnow() + timedelta(days=30)
+        access_expires_at = datetime.now(UTC) + timedelta(hours=1)
+        refresh_expires_at = datetime.now(UTC) + timedelta(days=30)
         
         save_tokens(
             user_id=user["id"],

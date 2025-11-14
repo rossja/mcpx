@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>mcpx.lol — Simulated Adversarial MCP Servers</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta
+    name="description"
+    content="mcpx.lol hosts simulated 'malicious' Model Context Protocol servers for safe adversarial testing of generative AI systems."
+  />
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+</head>
+<body>
+  <div class="page-wrap">
+    <header class="site-header">
+      <div class="logo">
+        <span class="logo-mark"></span>
+        <span class="logo-text">mcpx.lol</span>
+      </div>
+      <nav class="nav">
+        <a href="#what">What</a>
+        <a href="#how">How</a>
+        <a href="#use-cases">Use&nbsp;cases</a>
+        <a href="#ethics">Ethics</a>
+        <a href="#access" class="nav-cta">Request access</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-content">
+          <p class="hero-kicker">model context protocol · adversarial sandbox</p>
+          <h1>Simulated &ldquo;malicious&rdquo; MCP servers for AI red-teaming.</h1>
+          <p class="hero-subtitle">
+            mcpx.lol is a controlled environment for evaluating how generative AI systems
+            behave when wired up to hostile-but-simulated Model Context Protocol tools.
+            No real malware. No real exploits. Just test harnesses that act mean.
+          </p>
+          <div class="hero-actions">
+            <a href="#access" class="btn btn-primary">Request early access</a>
+            <a href="#what" class="btn btn-ghost">Browse concept</a>
+          </div>
+          <p class="hero-footnote">
+            For research, evaluation, and safety teams only. Offensive use is prohibited.
+          </p>
+        </div>
+        <div class="hero-visual">
+          <div class="orb">
+            <div class="orb-ring orb-ring-1"></div>
+            <div class="orb-ring orb-ring-2"></div>
+            <div class="orb-core"></div>
+          </div>
+          <div class="hero-metadata">
+            <div class="meta-card">
+              <span class="meta-label">Mode</span>
+              <span class="meta-value">Simulated adversary</span>
+            </div>
+            <div class="meta-card">
+              <span class="meta-label">Protocol</span>
+              <span class="meta-value">MCP</span>
+            </div>
+            <div class="meta-card">
+              <span class="meta-label">Surface</span>
+              <span class="meta-value">Tools · Resources · Prompts</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="what" class="section">
+        <div class="section-header">
+          <h2>What is mcpx.lol?</h2>
+          <p>
+            A playground of hostile MCP servers that behave like malicious integrations,
+            without shipping anything actually dangerous into your environment.
+          </p>
+        </div>
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>Simulated threat patterns</h3>
+            <p>
+              Servers are designed to mimic undesirable behaviors: data exfiltration attempts,
+              prompt injection, tool abuse, unsafe file operations, and more — all implemented
+              as inert simulations instead of real exploits.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Focus on model behavior</h3>
+            <p>
+              The goal isn&rsquo;t to compromise anything; it&rsquo;s to observe how your
+              models respond when connected to untrusted tools. Do they escalate? Refuse?
+              Ask for help? Hallucinate compliance?
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="how" class="section">
+        <div class="section-header">
+          <h2>How it works</h2>
+          <p>
+            Treat mcpx.lol like a set of external MCP servers and wire them into your
+            existing toolchain or eval harness.
+          </p>
+        </div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <h3>1. Attach</h3>
+              <p>
+                Point your MCP-compatible client or evaluation framework at one or more
+                mcpx.lol servers. Each server advertises tools with clearly labeled,
+                intentionally suspicious capabilities.
+              </p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <h3>2. Script scenarios</h3>
+              <p>
+                Run scripted conversations where the model is nudged toward bad decisions:
+                exporting data, ignoring policy, or following tampered tool outputs.
+              </p>
+            </div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <h3>3. Observe &amp; score</h3>
+              <p>
+                Log tool calls, messages, and model decisions to quantify how robust your
+                system is to adversarial tool behavior — and how often it fails gracefully
+                versus catastrophically.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="use-cases" class="section">
+        <div class="section-header">
+          <h2>Who is this for?</h2>
+          <p>
+            Anyone trying to keep tool-augmented AI systems from doing something regrettable.
+          </p>
+        </div>
+        <div class="grid grid-3">
+          <div class="card">
+            <h3>Safety &amp; red-teaming</h3>
+            <p>
+              Stress-test deployment policies, refusal behaviors, and escalation flows against
+              intentionally untrustworthy tools.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Eval &amp; research teams</h3>
+            <p>
+              Build structured benchmarks around adversarial MCP interactions and measure
+              progress over time.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Platform engineers</h3>
+            <p>
+              Validate that your tool sandboxing, logging, and access control don&rsquo;t
+              crumble the moment a &ldquo;friendly&rdquo; tool turns weird.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="ethics" class="section section-accent">
+        <div class="section-header">
+          <h2>Safety, ethics, and scope</h2>
+          <p>
+            This project is explicitly scoped for defensive use: understanding and improving
+            the robustness of AI systems, not breaking things in production.
+          </p>
+        </div>
+        <div class="grid grid-2">
+          <div class="card card-outline">
+            <h3>What mcpx.lol is <em>not</em></h3>
+            <ul>
+              <li>Not a malware distribution platform</li>
+              <li>Not a vulnerability marketplace</li>
+              <li>Not a way to attack real users or infrastructure</li>
+            </ul>
+          </div>
+          <div class="card card-outline">
+            <h3>What mcpx.lol <em>is</em></h3>
+            <ul>
+              <li>A controlled, simulated threat environment</li>
+              <li>A tool for evaluation and research</li>
+              <li>A way to make models behave less catastrophically</li>
+            </ul>
+          </div>
+        </div>
+        <p class="ethics-note">
+          Access may be gated, logged, or rate-limited. Offensive or abusive use is not allowed.
+        </p>
+      </section>
+
+      <section id="access" class="section">
+        <div class="section-header">
+          <h2>Request access</h2>
+          <p>
+            Interested in experimenting with simulated malicious MCP servers? Share a bit
+            about your use case and we&rsquo;ll follow up.
+          </p>
+        </div>
+	<!--
+        <div class="access-grid">
+          <form
+            class="card access-form"
+            method="post"
+            action="https://mcpx.lol/access-request" 
+          >
+            <label class="field">
+              <span>Work email</span>
+              <input type="email" name="email" placeholder="you@lab.or.company" required />
+            </label>
+            <label class="field">
+              <span>Organization</span>
+              <input type="text" name="org" placeholder="Org / team / project" />
+            </label>
+            <label class="field">
+              <span>Intended use</span>
+              <textarea
+                name="use_case"
+                rows="4"
+                placeholder="Red-teaming, evals, platform testing, etc."
+              ></textarea>
+            </label>
+            <label class="field field-inline">
+              <input type="checkbox" name="confirm_defensive" required />
+              <span>I confirm this is for defensive / research use only.</span>
+            </label>
+            <button type="submit" class="btn btn-primary btn-full">
+              Submit request
+            </button>
+          </form>
+          <div class="access-side card">
+            <h3>Roadmap (high level)</h3>
+            <ul>
+              <li>Configurable threat profiles per MCP server</li>
+              <li>Scenario packs for common failure modes</li>
+              <li>Eval harness integrations</li>
+              <li>Self-hosted deployment option</li>
+            </ul>
+            <p class="access-note">
+              No promises on timelines yet. This is early-stage and very much experimental.
+            </p>
+          </div>
+        </div>
+	-->
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>&copy; <span id="year"></span> mcpx.lol</span>
+      <span class="footer-dot">·</span>
+      <span>Simulated adversaries for safer AI tools.</span>
+    </footer>
+  </div>
+
+  <script src="./script.js"></script>
+</body>
+</html>
+

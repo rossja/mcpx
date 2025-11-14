@@ -28,7 +28,7 @@ dependencies = [
 ]
 
 [project.scripts]
-mcpx = "src.main:main"
+mcpx = "mcp_server.main:main"
 
 [dependency-groups]
 dev = [
