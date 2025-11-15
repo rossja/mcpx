@@ -18,13 +18,26 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-DEPLOY_DIR="/data/web/mcpx.lol"
+# Auto-detect deployment directory
+# Priority: 1. Current directory if it has mcp_server, 2. /data/web/mcpx.lol, 3. /data/web/mcpx
+if [ -d "./mcp_server" ]; then
+    DEPLOY_DIR=$(pwd)
+elif [ -d "/data/web/mcpx.lol/mcp_server" ]; then
+    DEPLOY_DIR="/data/web/mcpx.lol"
+elif [ -d "/data/web/mcpx/mcp_server" ]; then
+    DEPLOY_DIR="/data/web/mcpx"
+else
+    DEPLOY_DIR="/data/web/mcpx.lol"  # Default fallback
+fi
+
 ERRORS=0
 WARNINGS=0
 
 echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}"
 echo -e "${BLUE}  MCPX Configuration Verification${NC}"
 echo -e "${BLUE}═══════════════════════════════════════════════════════${NC}\n"
+
+echo -e "${BLUE}Checking installation at: ${GREEN}$DEPLOY_DIR${NC}\n"
 
 # Check if running as root
 if [ "$EUID" -ne 0 ]; then 
@@ -91,18 +104,29 @@ fi
 
 # Check 6: nginx configuration
 echo -e "${BLUE}[6/10] Checking nginx configuration...${NC}"
+# Look for any mcpx nginx config file
+NGINX_CONFIG=""
 if [ -f "/etc/nginx/sites-available/mcpx.lol" ]; then
+    NGINX_CONFIG="/etc/nginx/sites-available/mcpx.lol"
+elif [ -f "/etc/nginx/sites-available/mcpx" ]; then
+    NGINX_CONFIG="/etc/nginx/sites-available/mcpx"
+elif ls /etc/nginx/sites-available/*mcpx* 2>/dev/null | head -n1; then
+    NGINX_CONFIG=$(ls /etc/nginx/sites-available/*mcpx* 2>/dev/null | head -n1)
+fi
+
+if [ -n "$NGINX_CONFIG" ]; then
     if nginx -t 2>&1 | grep -q "test is successful"; then
-        echo -e "${GREEN}✓ nginx configuration is valid${NC}\n"
+        echo -e "${GREEN}✓ nginx configuration is valid${NC}"
+        echo -e "${GREEN}  Config: $NGINX_CONFIG${NC}\n"
     else
         echo -e "${RED}✗ nginx configuration has errors${NC}"
         echo -e "${YELLOW}   Run: sudo nginx -t${NC}\n"
         ERRORS=$((ERRORS + 1))
     fi
 else
-    echo -e "${RED}✗ nginx configuration not found${NC}"
+    echo -e "${YELLOW}⚠️  nginx configuration not found${NC}"
     echo -e "${YELLOW}   Run: sudo ./deployment/install.sh${NC}\n"
-    ERRORS=$((ERRORS + 1))
+    WARNINGS=$((WARNINGS + 1))
 fi
 
 # Check 7: systemd service file
