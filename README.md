@@ -2,6 +2,10 @@
 
 A production-ready MCP (Model Context Protocol) server designed for safe adversarial testing and evaluation of AI tool integration. Built with Python, FastMCP, and modern tooling.
 
+> **🚀 Want to deploy quickly?** Check out [INSTALL.md](INSTALL.md) for the simple 4-step installation guide!
+> 
+> **📖 New to MCPX?** See [GETTING_STARTED.md](GETTING_STARTED.md) to find the right guide for you.
+
 ## Purpose
 
 **mcpx is a controlled environment for testing how AI systems behave when connected to external tools.** The goal is to help safety teams, researchers, and platform engineers evaluate robustness, authentication flows, error handling, and edge cases in tool-augmented AI systems.
@@ -74,107 +78,58 @@ Display comprehensive request metadata including headers and connection info. Te
 
 ## Authentication
 
-MCPX supports two authentication modes to accommodate different use cases:
+MCPX supports two authentication modes:
 
-### No Authentication (noauth)
+- **`noauth`**: No authentication (for development/testing only)
+- **`oauth`**: OAuth 2.0 with PKCE (for production)
 
-**Use for**: Development, testing, and trusted internal networks
+### Quick Setup
 
 ```bash
-# In your .env file
+# Development (no auth)
 AUTH_MODE=noauth
-```
 
-⚠️ **Warning**: This mode provides NO security. Only use in trusted environments!
-
-### OAuth 2.0 (oauth)
-
-**Use for**: Production deployments requiring authentication
-
-MCPX implements OAuth 2.0 Authorization Code Flow with PKCE for secure authentication.
-
-#### Default Credentials
-
-- **Username**: `mcpuser`
-- **Password**: `OMG!letmein`
-
-#### Configuration
-
-```bash
-# In your .env file
+# Production (OAuth)
 AUTH_MODE=oauth
-AUTH_DB_PATH=./data/auth.db
-JWT_SECRET_KEY=your-super-secret-jwt-key-here
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES=60
-JWT_REFRESH_TOKEN_EXPIRE_DAYS=30
+JWT_SECRET_KEY=$(python -c "import secrets; print(secrets.token_urlsafe(32))")
 ```
 
-Generate a secure JWT secret key:
-```bash
-python -c "import secrets; print(secrets.token_urlsafe(32))"
-```
+**Default OAuth Credentials:**
+- Username: `mcpuser`
+- Password: `OMG!letmein`
 
-#### OAuth Flow
-
-1. **Authorization Request**: Client requests authorization
-   ```
-   GET /oauth/authorize?response_type=code&client_id=mcpx-client&redirect_uri=...&state=...&code_challenge=...&code_challenge_method=S256
-   ```
-
-2. **User Login**: User enters credentials in the login page
-
-3. **Authorization Code**: Server redirects back with authorization code
-   ```
-   https://redirect_uri?code=...&state=...
-   ```
-
-4. **Token Exchange**: Client exchanges code for access token
-   ```
-   POST /oauth/token
-   grant_type=authorization_code&code=...&redirect_uri=...&client_id=...&code_verifier=...
-   ```
-
-5. **API Access**: Use access token in Authorization header
-   ```
-   Authorization: Bearer <access_token>
-   ```
-
-6. **Token Refresh**: When access token expires, use refresh token
-   ```
-   POST /oauth/token
-   grant_type=refresh_token&refresh_token=...
-   ```
-
-#### OAuth Endpoints
-
-- `GET /oauth/authorize` - Authorization endpoint (shows login page)
-- `POST /oauth/authorize` - Authorization endpoint (handles login)
-- `POST /oauth/token` - Token endpoint (exchange code for tokens)
-- `POST /oauth/revoke` - Revoke tokens
-- `GET /oauth/userinfo` - Get user information
-
-#### Token Management
-
-- **Access tokens**: Valid for 1 hour (configurable)
-- **Refresh tokens**: Valid for 30 days (configurable)
-- **Token storage**: SQLite database
-- **Token format**: JWT (HS256)
-- **Security**: bcrypt password hashing (cost factor 12)
+**📖 For complete authentication documentation**, including OAuth flow details, token management, and security best practices, see **[AUTHENTICATION.md](AUTHENTICATION.md)**.
 
 ## Quick Start
 
-### Prerequisites
+### Production Installation (4 Simple Steps!)
 
-- Python 3.12 or higher
-- [uv](https://docs.astral.sh/uv/) package manager
-- OpenAI API key (for web search tool)
-- Optional: OpenWeatherMap API key (for weather tool)
+Want to deploy MCPX to a production server? It's as simple as:
 
-### Installation
+```bash
+# 1. Clone the repo
+git clone https://github.com/rossja/mcpx.git
+cd mcpx
+
+# 2. Run the installer
+sudo ./deployment/install.sh
+
+# 3. Edit the environment file
+sudo nano /data/web/mcpx.lol/.env
+
+# 4. Start it up!
+sudo systemctl start mcpx.service
+```
+
+**📖 Full installation guide: [INSTALL.md](INSTALL.md)**
+
+### Local Development Setup
+
+For local development and testing:
 
 1. **Clone the repository:**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/rossja/mcpx.git
    cd mcpx
    ```
 
@@ -185,7 +140,7 @@ python -c "import secrets; print(secrets.token_urlsafe(32))"
 
 3. **Configure environment variables:**
    ```bash
-   cp .env.example .env
+   cp env.example .env
    # Edit .env and add your API keys
    ```
 
@@ -207,7 +162,6 @@ mcpx/
 ├── .gitignore             
 ├── README.md
 ├── AUTHENTICATION.md       # Authentication documentation
-├── DEPLOYMENT.md           # Deployment guide
 ├── LICENSE
 ├── data/
 │   └── auth.db             # SQLite database (created at runtime)
@@ -229,7 +183,7 @@ mcpx/
 │       ├── web_search.py
 │       ├── ip_lookup.py
 │       └── request_info.py
-├── web/                    # Web assets (marketing site, etc.)
+├── web/                    # Static brochure site
 │   └── mcpx.lol/
 │       ├── index.html
 │       ├── script.js
@@ -240,11 +194,21 @@ mcpx/
 │   ├── test_server.py
 │   └── test_auth.py        # Authentication tests
 ├── docs/                   # Documentation
-│   └── mcpx-prd.md
-└── deployment/             # Deployment configurations
-    ├── nginx.conf          # nginx configuration
-    ├── systemd.service     # systemd service file
-    └── setup.sh            # Deployment script
+│   └── mcpx-prd.md         # Product requirements document
+├── INSTALL.md              # Simple 4-step installation guide
+├── GETTING_STARTED.md      # Navigation guide
+├── AUTHENTICATION.md       # Authentication documentation
+└── deployment/             # Production deployment
+    ├── install.sh          # Local installation script (run on server)
+    ├── deploy.sh           # Remote deployment script (run from local machine)
+    ├── verify-config.sh    # Configuration verification script
+    ├── mcpx.service        # systemd service file
+    ├── mcpx.lol.nginx.conf # nginx configuration
+    ├── production.env.example  # Production environment template
+    ├── QUICKSTART.md       # Ultra-quick 4-step guide
+    ├── CHECKLIST.md        # Installation checklist
+    ├── README.md           # Detailed deployment guide
+    └── QUICK_REFERENCE.md  # Quick command reference
 ```
 
 ### Running Tests
@@ -278,73 +242,23 @@ uv sync
 
 ## Production Deployment
 
-### Automated Deployment (Linux)
+**📖 For complete production deployment**, see **[INSTALL.md](INSTALL.md)** for the simple 4-step guide, or **[deployment/README.md](deployment/README.md)** for advanced options.
 
-For a complete automated deployment on Ubuntu/Debian:
+### Quick Deployment Options
 
+**Option 1: Local Installation (Simplest)**
 ```bash
-# Copy your code to /opt/mcpx
-sudo cp -r . /opt/mcpx
-
-# Run the deployment script
-cd /opt/mcpx/deployment
-sudo ./setup.sh
+git clone https://github.com/rossja/mcpx.git
+cd mcpx
+sudo ./deployment/install.sh
 ```
 
-The script will:
-- Install Python 3.12+, uv, nginx, and certbot
-- Set up SSL certificates with Let's Encrypt
-- Configure nginx as reverse proxy
-- Create systemd service
-- Start the server
+**Option 2: Remote Deployment**
+```bash
+./deployment/deploy.sh root@your-server
+```
 
-### Manual Deployment
-
-1. **Install system dependencies:**
-   ```bash
-   sudo apt-get update
-   sudo apt-get install -y python3.12 nginx certbot python3-certbot-nginx
-   ```
-
-2. **Install uv:**
-   ```bash
-   curl -LsSf https://astral.sh/uv/install.sh | sh
-   ```
-
-3. **Set up the application:**
-   ```bash
-   sudo mkdir -p /opt/mcpx
-   sudo cp -r . /opt/mcpx
-   cd /opt/mcpx
-   uv sync
-   ```
-
-4. **Configure environment:**
-   ```bash
-   sudo cp .env.example /opt/mcpx/.env
-   sudo nano /opt/mcpx/.env  # Add your API keys
-   ```
-
-5. **Obtain SSL certificate:**
-   ```bash
-   sudo certbot certonly --nginx -d mcpx.lol
-   ```
-
-6. **Configure nginx:**
-   ```bash
-   sudo cp deployment/nginx.conf /etc/nginx/sites-available/mcpx.conf
-   sudo ln -s /etc/nginx/sites-available/mcpx.conf /etc/nginx/sites-enabled/
-   sudo nginx -t
-   sudo systemctl restart nginx
-   ```
-
-7. **Set up systemd service:**
-   ```bash
-   sudo cp deployment/systemd.service /etc/systemd/system/mcpx.service
-   sudo systemctl daemon-reload
-   sudo systemctl enable mcpx.service
-   sudo systemctl start mcpx.service
-   ```
+Both options handle all setup automatically. You'll just need to configure your API keys in `/data/web/mcpx.lol/.env` and restart the service.
 
 ### Monitoring
 
@@ -464,34 +378,12 @@ sudo certbot certificates
 
 ### Authentication issues
 
-1. **401 Unauthorized errors:**
-   - Check that you're using the correct access token
-   - Verify token hasn't expired (1 hour lifetime)
-   - Use refresh token to get a new access token
-   
-2. **Login fails with "Invalid username or password":**
-   - Default credentials: username `mcpuser`, password `OMG!letmein`
-   - Check that authentication database was initialized
+For authentication-related issues, see the troubleshooting section in **[AUTHENTICATION.md](AUTHENTICATION.md)**.
 
-3. **Database errors:**
-   ```bash
-   # Check if database exists
-   ls -la ./data/auth.db
-   
-   # If missing, restart server to initialize
-   uv run python -m mcp_server.main
-   ```
-
-4. **"Token expired" errors:**
-   - Use the refresh token to get a new access token
-   - POST to `/oauth/token` with `grant_type=refresh_token`
-
-5. **Switch to noauth mode for testing:**
-   ```bash
-   # In .env file
-   AUTH_MODE=noauth
-   ```
-   ⚠️ Only use in development/testing!
+Quick checks:
+- Default credentials: `mcpuser` / `OMG!letmein`
+- Check JWT_SECRET_KEY is set in `.env`
+- For testing, use `AUTH_MODE=noauth` (development only!)
 
 ## Safety & Ethics
 

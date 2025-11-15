@@ -490,9 +490,12 @@ mcpx-server/
 │   ├── test_server.py
 │   └── test_auth.py        # Authentication tests
 └── deployment/
-    ├── nginx.conf          # nginx configuration
-    ├── systemd.service     # systemd service file
-    └── setup.sh            # Deployment script
+    ├── deploy.sh           # Main deployment script
+    ├── mcpx.service        # systemd service file
+    ├── mcpx.lol.nginx.conf # nginx configuration
+    ├── production.env.example  # Production environment template
+    ├── README.md           # Deployment guide
+    └── QUICK_REFERENCE.md  # Quick command reference
 ```
 
 ### Testing Requirements
