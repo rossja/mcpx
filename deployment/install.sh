@@ -46,7 +46,7 @@ echo -e "${GREEN}╚════════════════════
 
 # Step 1: Install system dependencies
 echo -e "${BLUE}[1/10] Installing system dependencies...${NC}"
-apt-get update -qq
+# apt-get update -qq # TODO: make apt update optional
 
 # Try to install Python 3.12, fall back to 3.11 or 3.10 if not available
 PYTHON_VERSION=""
