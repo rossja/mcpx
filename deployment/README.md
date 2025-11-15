@@ -95,7 +95,7 @@ The deployment script will:
 ### On The Server
 
 The deployment script will install:
-- Python 3.12+
+- Python 3.10+ (tries 3.12, 3.11, or falls back to available version)
 - uv (package manager)
 - nginx
 - certbot (for SSL)

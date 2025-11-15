@@ -47,8 +47,27 @@ echo -e "${GREEN}╚════════════════════
 # Step 1: Install system dependencies
 echo -e "${BLUE}[1/10] Installing system dependencies...${NC}"
 apt-get update -qq
-apt-get install -y -qq python3.12 python3.12-venv python3-pip curl nginx certbot python3-certbot-nginx
-echo -e "${GREEN}✓ System dependencies installed${NC}\n"
+
+# Try to install Python 3.12, fall back to 3.11 or 3.10 if not available
+PYTHON_VERSION=""
+if apt-cache show python3.12 &>/dev/null; then
+    apt-get install -y -qq python3.12 python3.12-venv
+    PYTHON_VERSION="python3.12"
+elif apt-cache show python3.11 &>/dev/null; then
+    apt-get install -y -qq python3.11 python3.11-venv
+    PYTHON_VERSION="python3.11"
+else
+    # Fall back to default python3
+    apt-get install -y -qq python3 python3-venv
+    PYTHON_VERSION="python3"
+fi
+
+# Install other dependencies
+apt-get install -y -qq python3-pip curl nginx certbot python3-certbot-nginx
+
+# Check Python version
+PYTHON_VER=$($PYTHON_VERSION --version | cut -d' ' -f2)
+echo -e "${GREEN}✓ System dependencies installed (Python $PYTHON_VER)${NC}\n"
 
 # Step 2: Install uv if not present
 echo -e "${BLUE}[2/10] Installing uv package manager...${NC}"

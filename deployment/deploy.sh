@@ -90,7 +90,18 @@ echo -e "${GREEN}✓ Server code deployed${NC}\n"
 echo -e "${BLUE}[5/12] Installing system dependencies...${NC}"
 ssh "$HOST" << 'ENDSSH'
 sudo apt-get update -qq
-sudo apt-get install -y -qq python3.12 python3.12-venv python3-pip curl nginx certbot python3-certbot-nginx
+
+# Try to install Python 3.12, fall back to 3.11 or 3.10 if not available
+if apt-cache show python3.12 &>/dev/null; then
+    sudo apt-get install -y -qq python3.12 python3.12-venv
+elif apt-cache show python3.11 &>/dev/null; then
+    sudo apt-get install -y -qq python3.11 python3.11-venv
+else
+    sudo apt-get install -y -qq python3 python3-venv
+fi
+
+# Install other dependencies
+sudo apt-get install -y -qq python3-pip curl nginx certbot python3-certbot-nginx
 ENDSSH
 echo -e "${GREEN}✓ System dependencies installed${NC}\n"
 

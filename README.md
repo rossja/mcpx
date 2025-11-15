@@ -19,7 +19,7 @@ This is the foundation for building adversarial test scenarios — currently pro
 - 🔒 **HTTPS Support**: Full SSL/TLS with Let's Encrypt integration
 - 🔐 **OAuth 2.0 Authentication**: Test auth flows, token management, and access control
 - 📡 **Streaming HTTP**: Efficient bi-directional communication
-- 🐍 **Modern Python**: Built with Python 3.12+ and uv package manager
+- 🐍 **Modern Python**: Built with Python 3.10+ and uv package manager
 - 🔧 **Production Ready**: nginx reverse proxy, systemd service, auto-renewal
 - ✅ **Tested**: Unit tests for all tools
 

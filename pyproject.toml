@@ -3,7 +3,7 @@ name = "mcpx"
 version = "1.0.0"
 description = "MCPX HTTP MCP Server - A production-ready MCP server with utility tools"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 license = {file = "LICENSE"}
 authors = [
     {name = "MCPX Contributors"}
@@ -13,6 +13,8 @@ classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]

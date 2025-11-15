@@ -24,7 +24,7 @@ sudo ./deployment/install.sh
 ```
 
 This script will automatically:
-- ✅ Install all system dependencies (Python 3.12, nginx, certbot, uv)
+- ✅ Install all system dependencies (Python 3.10+, nginx, certbot, uv)
 - ✅ Create the deployment directory at `/data/web/mcpx.lol`
 - ✅ Copy all necessary files
 - ✅ Install Python dependencies
