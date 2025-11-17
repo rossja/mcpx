@@ -123,10 +123,17 @@ echo -e "${BLUE}[5/10] Copying MCP server code...${NC}"
 # Check if we're already in the deployment directory
 if [ "$(realpath "$REPO_ROOT")" = "$(realpath "$DEPLOY_DIR")" ]; then
     echo -e "${YELLOW}⚠️  Already running from deployment directory - skipping code copy${NC}"
-elif [ -f "$REPO_ROOT/pyproject.toml" ] && [ -f "$REPO_ROOT/uv.lock" ] && [ -d "$REPO_ROOT/mcp_server" ]; then
+elif [ -f "$REPO_ROOT/pyproject.toml" ] && [ -d "$REPO_ROOT/mcp_server" ]; then
     # Copy all necessary files
     cp "$REPO_ROOT/pyproject.toml" "$DEPLOY_DIR/"
-    cp "$REPO_ROOT/uv.lock" "$DEPLOY_DIR/"
+    
+    # Copy uv.lock if it exists, otherwise we'll generate it later
+    if [ -f "$REPO_ROOT/uv.lock" ]; then
+        cp "$REPO_ROOT/uv.lock" "$DEPLOY_DIR/"
+    else
+        echo -e "${YELLOW}⚠️  uv.lock not found, will be generated during dependency installation${NC}"
+    fi
+    
     cp -r "$REPO_ROOT/mcp_server" "$DEPLOY_DIR/"
     cp -r "$REPO_ROOT/deployment" "$DEPLOY_DIR/"
 
@@ -134,11 +141,11 @@ elif [ -f "$REPO_ROOT/pyproject.toml" ] && [ -f "$REPO_ROOT/uv.lock" ] && [ -d "
     [ -f "$REPO_ROOT/README.md" ] && cp "$REPO_ROOT/README.md" "$DEPLOY_DIR/"
     [ -f "$REPO_ROOT/LICENSE" ] && cp "$REPO_ROOT/LICENSE" "$DEPLOY_DIR/"
     echo -e "${GREEN}✓ Server code copied${NC}"
-elif [ -f "$DEPLOY_DIR/pyproject.toml" ] && [ -f "$DEPLOY_DIR/uv.lock" ] && [ -d "$DEPLOY_DIR/mcp_server" ]; then
+elif [ -f "$DEPLOY_DIR/pyproject.toml" ] && [ -d "$DEPLOY_DIR/mcp_server" ]; then
     echo -e "${YELLOW}⚠️  Source files not found, but server code already exists at destination${NC}"
 else
     echo -e "${RED}✗ Error: Required files not found at $REPO_ROOT${NC}"
-    echo -e "${RED}   Missing one or more of: pyproject.toml, uv.lock, mcp_server/${NC}"
+    echo -e "${RED}   Missing one or more of: pyproject.toml, mcp_server/${NC}"
     echo -e "${RED}   Please run this script from a cloned git repository${NC}"
     echo -e "\n${BLUE}To fix this:${NC}"
     echo -e "1. Clone the repository: ${GREEN}git clone <repo-url> /tmp/mcpx${NC}"
