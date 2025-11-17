@@ -111,45 +111,18 @@ chown "$DEPLOY_USER:$DEPLOY_USER" "$DEPLOY_DIR/data/.uv-cache"
 sudo -u "$DEPLOY_USER" env UV_CACHE_DIR="$DEPLOY_DIR/data/.uv-cache" /usr/bin/uv sync
 echo -e "${GREEN}✓ Dependencies updated${NC}\n"
 
-# Step 3: Update nginx configuration
-echo -e "${BLUE}[3/6] Updating nginx configuration...${NC}"
-if [ -f "$DEPLOY_DIR/deployment/mcpx.lol.nginx.conf" ]; then
-    # Backup existing config
-    TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-    if [ -f /etc/nginx/sites-available/mcpx.lol ]; then
-        cp /etc/nginx/sites-available/mcpx.lol "/etc/nginx/sites-available/mcpx.lol.backup_${TIMESTAMP}"
-        echo -e "${YELLOW}⚠️  Backed up existing config to mcpx.lol.backup_${TIMESTAMP}${NC}"
-    fi
-    
-    # Install new config
-    cp "$DEPLOY_DIR/deployment/mcpx.lol.nginx.conf" /etc/nginx/sites-available/mcpx.lol
-    ln -sf /etc/nginx/sites-available/mcpx.lol /etc/nginx/sites-enabled/
-    
-    # Test nginx config
-    if nginx -t 2>/dev/null; then
-        systemctl reload nginx
-        echo -e "${GREEN}✓ nginx configuration updated${NC}"
-    else
-        echo -e "${RED}✗ nginx configuration test failed${NC}"
-        echo -e "${YELLOW}⚠️  Restoring backup...${NC}"
-        cp "/etc/nginx/sites-available/mcpx.lol.backup_${TIMESTAMP}" /etc/nginx/sites-available/mcpx.lol
-        systemctl reload nginx
-        echo -e "${RED}Please check the nginx configuration manually${NC}"
-    fi
-else
-    echo -e "${YELLOW}⚠️  nginx config file not found, skipping${NC}"
-fi
+# Step 3: Skip nginx configuration (managed separately)
+echo -e "${BLUE}[3/6] Nginx configuration...${NC}"
+echo -e "${YELLOW}⚠️  Skipping nginx config update (managed separately)${NC}"
+echo -e "${YELLOW}   Updated config available at: $DEPLOY_DIR/deployment/mcpx.lol.nginx.conf${NC}"
+echo -e "${YELLOW}   To update manually: sudo cp $DEPLOY_DIR/deployment/mcpx.lol.nginx.conf /etc/nginx/sites-available/mcpx.lol${NC}"
 echo
 
-# Step 4: Update systemd service
-echo -e "${BLUE}[4/6] Updating systemd service...${NC}"
-if [ -f "$DEPLOY_DIR/deployment/mcpx.service" ]; then
-    cp "$DEPLOY_DIR/deployment/mcpx.service" /etc/systemd/system/mcpx.service
-    systemctl daemon-reload
-    echo -e "${GREEN}✓ systemd service updated${NC}"
-else
-    echo -e "${YELLOW}⚠️  systemd service file not found, skipping${NC}"
-fi
+# Step 4: Skip systemd service (managed separately)
+echo -e "${BLUE}[4/6] Systemd service...${NC}"
+echo -e "${YELLOW}⚠️  Skipping systemd service update (managed separately)${NC}"
+echo -e "${YELLOW}   Updated service file available at: $DEPLOY_DIR/deployment/mcpx.service${NC}"
+echo -e "${YELLOW}   To update manually: sudo cp $DEPLOY_DIR/deployment/mcpx.service /etc/systemd/system/mcpx.service && sudo systemctl daemon-reload${NC}"
 echo
 
 # Step 5: Set permissions
