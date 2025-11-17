@@ -106,9 +106,15 @@ echo -e "${BLUE}[4/10] Copying static website...${NC}"
 # Check if we're already in the deployment directory
 if [ "$(realpath "$REPO_ROOT")" = "$(realpath "$DEPLOY_DIR")" ]; then
     echo -e "${YELLOW}⚠️  Already running from deployment directory - skipping file copy${NC}"
-else
+elif [ -d "$REPO_ROOT/web/mcpx.lol" ]; then
     cp -r "$REPO_ROOT/web/mcpx.lol"/* "$DEPLOY_DIR/public/"
     echo -e "${GREEN}✓ Static files copied${NC}"
+elif [ -d "$DEPLOY_DIR/public" ] && [ -f "$DEPLOY_DIR/public/index.html" ]; then
+    echo -e "${YELLOW}⚠️  Source files not found, but static files already exist at destination${NC}"
+else
+    echo -e "${RED}✗ Error: Static website files not found at $REPO_ROOT/web/mcpx.lol${NC}"
+    echo -e "${RED}   Please run this script from a cloned git repository${NC}"
+    exit 1
 fi
 echo
 
@@ -117,17 +123,27 @@ echo -e "${BLUE}[5/10] Copying MCP server code...${NC}"
 # Check if we're already in the deployment directory
 if [ "$(realpath "$REPO_ROOT")" = "$(realpath "$DEPLOY_DIR")" ]; then
     echo -e "${YELLOW}⚠️  Already running from deployment directory - skipping code copy${NC}"
-else
+elif [ -f "$REPO_ROOT/pyproject.toml" ] && [ -f "$REPO_ROOT/uv.lock" ] && [ -d "$REPO_ROOT/mcp_server" ]; then
     # Copy all necessary files
     cp "$REPO_ROOT/pyproject.toml" "$DEPLOY_DIR/"
     cp "$REPO_ROOT/uv.lock" "$DEPLOY_DIR/"
     cp -r "$REPO_ROOT/mcp_server" "$DEPLOY_DIR/"
     cp -r "$REPO_ROOT/deployment" "$DEPLOY_DIR/"
 
-    # Copy README and LICENSE for reference
-    cp "$REPO_ROOT/README.md" "$DEPLOY_DIR/"
-    cp "$REPO_ROOT/LICENSE" "$DEPLOY_DIR/"
+    # Copy README and LICENSE for reference (optional)
+    [ -f "$REPO_ROOT/README.md" ] && cp "$REPO_ROOT/README.md" "$DEPLOY_DIR/"
+    [ -f "$REPO_ROOT/LICENSE" ] && cp "$REPO_ROOT/LICENSE" "$DEPLOY_DIR/"
     echo -e "${GREEN}✓ Server code copied${NC}"
+elif [ -f "$DEPLOY_DIR/pyproject.toml" ] && [ -f "$DEPLOY_DIR/uv.lock" ] && [ -d "$DEPLOY_DIR/mcp_server" ]; then
+    echo -e "${YELLOW}⚠️  Source files not found, but server code already exists at destination${NC}"
+else
+    echo -e "${RED}✗ Error: Required files not found at $REPO_ROOT${NC}"
+    echo -e "${RED}   Missing one or more of: pyproject.toml, uv.lock, mcp_server/${NC}"
+    echo -e "${RED}   Please run this script from a cloned git repository${NC}"
+    echo -e "\n${BLUE}To fix this:${NC}"
+    echo -e "1. Clone the repository: ${GREEN}git clone <repo-url> /tmp/mcpx${NC}"
+    echo -e "2. Run the installer from there: ${GREEN}cd /tmp/mcpx && sudo ./deployment/install.sh${NC}"
+    exit 1
 fi
 echo
 
