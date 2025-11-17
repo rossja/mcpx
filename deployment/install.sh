@@ -252,7 +252,22 @@ server {
         try_files $uri $uri/ =404;
     }
 
-    # MCP server proxy
+    # MCP server proxy - match /mcp without trailing slash
+    location = /mcp {
+        proxy_pass http://mcpx;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \$scheme;
+        proxy_buffering off;
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 300s;
+        proxy_read_timeout 300s;
+        client_max_body_size 10M;
+    }
+    
+    # MCP server proxy - match /mcp/* with trailing slash
     location /mcp/ {
         # No trailing slash - preserves the /mcp prefix
         proxy_pass http://mcpx;
