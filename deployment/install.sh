@@ -35,7 +35,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Check if running as root
-if [ "$EUID" -ne 0 ]; then 
+if [ "$EUID" -ne 0 ]; then
     echo -e "${RED}Error: This script must be run as root (use sudo)${NC}"
     exit 1
 fi
@@ -73,11 +73,26 @@ echo -e "${GREEN}✓ System dependencies installed (Python $PYTHON_VER)${NC}\n"
 echo -e "${BLUE}[2/10] Installing uv package manager...${NC}"
 if ! command -v uv &> /dev/null; then
     curl -LsSf https://astral.sh/uv/install.sh | sh
-    export PATH="/root/.cargo/bin:$PATH"
 fi
-# Make uv available system-wide
-if [ ! -f /usr/local/bin/uv ]; then
-    ln -sf /root/.cargo/bin/uv /usr/local/bin/uv
+
+# Find where uv was installed and make it available system-wide
+UV_LOCATION=""
+if [ -f /root/.local/bin/uv ]; then
+    UV_LOCATION="/root/.local/bin/uv"
+elif [ -f /root/.cargo/bin/uv ]; then
+    UV_LOCATION="/root/.cargo/bin/uv"
+elif command -v uv &> /dev/null; then
+    UV_LOCATION=$(which uv)
+fi
+
+if [ -n "$UV_LOCATION" ]; then
+    # Copy (not symlink) to /usr/bin so it's always in PATH for all users
+    # This is needed because www-data can't access /root/.local/bin
+    # and /usr/bin is guaranteed to be in PATH even with restricted sudo
+    if [ ! -f /usr/bin/uv ] || [ "$UV_LOCATION" -nt /usr/bin/uv ]; then
+        cp "$UV_LOCATION" /usr/bin/uv
+        chmod 755 /usr/bin/uv
+    fi
 fi
 echo -e "${GREEN}✓ uv installed${NC}\n"
 
@@ -88,21 +103,33 @@ echo -e "${GREEN}✓ Directory structure created${NC}\n"
 
 # Step 4: Copy static website files
 echo -e "${BLUE}[4/10] Copying static website...${NC}"
-cp -r "$REPO_ROOT/web/mcpx.lol"/* "$DEPLOY_DIR/public/"
-echo -e "${GREEN}✓ Static files copied${NC}\n"
+# Check if we're already in the deployment directory
+if [ "$(realpath "$REPO_ROOT")" = "$(realpath "$DEPLOY_DIR")" ]; then
+    echo -e "${YELLOW}⚠️  Already running from deployment directory - skipping file copy${NC}"
+else
+    cp -r "$REPO_ROOT/web/mcpx.lol"/* "$DEPLOY_DIR/public/"
+    echo -e "${GREEN}✓ Static files copied${NC}"
+fi
+echo
 
 # Step 5: Copy MCP server code
 echo -e "${BLUE}[5/10] Copying MCP server code...${NC}"
-# Copy all necessary files
-cp "$REPO_ROOT/pyproject.toml" "$DEPLOY_DIR/"
-cp "$REPO_ROOT/uv.lock" "$DEPLOY_DIR/"
-cp -r "$REPO_ROOT/mcp_server" "$DEPLOY_DIR/"
-cp -r "$REPO_ROOT/deployment" "$DEPLOY_DIR/"
+# Check if we're already in the deployment directory
+if [ "$(realpath "$REPO_ROOT")" = "$(realpath "$DEPLOY_DIR")" ]; then
+    echo -e "${YELLOW}⚠️  Already running from deployment directory - skipping code copy${NC}"
+else
+    # Copy all necessary files
+    cp "$REPO_ROOT/pyproject.toml" "$DEPLOY_DIR/"
+    cp "$REPO_ROOT/uv.lock" "$DEPLOY_DIR/"
+    cp -r "$REPO_ROOT/mcp_server" "$DEPLOY_DIR/"
+    cp -r "$REPO_ROOT/deployment" "$DEPLOY_DIR/"
 
-# Copy README and LICENSE for reference
-cp "$REPO_ROOT/README.md" "$DEPLOY_DIR/"
-cp "$REPO_ROOT/LICENSE" "$DEPLOY_DIR/"
-echo -e "${GREEN}✓ Server code copied${NC}\n"
+    # Copy README and LICENSE for reference
+    cp "$REPO_ROOT/README.md" "$DEPLOY_DIR/"
+    cp "$REPO_ROOT/LICENSE" "$DEPLOY_DIR/"
+    echo -e "${GREEN}✓ Server code copied${NC}"
+fi
+echo
 
 # Step 6: Set permissions
 echo -e "${BLUE}[6/10] Setting permissions...${NC}"
@@ -114,7 +141,15 @@ echo -e "${GREEN}✓ Permissions set${NC}\n"
 # Step 7: Install Python dependencies
 echo -e "${BLUE}[7/10] Installing Python dependencies...${NC}"
 cd "$DEPLOY_DIR"
-sudo -u "$DEPLOY_USER" /usr/local/bin/uv sync
+
+# Create cache directory for uv in our deployment directory
+mkdir -p "$DEPLOY_DIR/data/.uv-cache"
+chown "$DEPLOY_USER:$DEPLOY_USER" "$DEPLOY_DIR/data/.uv-cache"
+
+# Run uv sync as the deploy user
+# Set UV_CACHE_DIR to use our deployment directory instead of /var/www/.cache
+# We use /usr/bin/uv which was copied there in step 2 (guaranteed to be in PATH)
+sudo -u "$DEPLOY_USER" env UV_CACHE_DIR="$DEPLOY_DIR/data/.uv-cache" /usr/bin/uv sync
 echo -e "${GREEN}✓ Python dependencies installed${NC}\n"
 
 # Step 8: Setup environment file
@@ -133,22 +168,61 @@ echo -e "${GREEN}✓ Environment configured${NC}\n"
 # Step 9: Install nginx configuration
 echo -e "${BLUE}[9/10] Configuring nginx...${NC}"
 
+# Disable any duplicate or old nginx configs by renaming them
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+if [ -f /etc/nginx/sites-enabled/mcpx.lol.conf ]; then
+    mv /etc/nginx/sites-enabled/mcpx.lol.conf "/etc/nginx/sites-enabled/mcpx.lol.conf.disabled_${TIMESTAMP}"
+    echo -e "${YELLOW}⚠️  Disabled duplicate config: mcpx.lol.conf -> mcpx.lol.conf.disabled_${TIMESTAMP}${NC}"
+fi
+if [ -f /etc/nginx/sites-available/mcpx.lol.conf ]; then
+    mv /etc/nginx/sites-available/mcpx.lol.conf "/etc/nginx/sites-available/mcpx.lol.conf.disabled_${TIMESTAMP}"
+    echo -e "${YELLOW}⚠️  Backed up duplicate config: sites-available/mcpx.lol.conf${NC}"
+fi
+
+# Check if config already exists and is working
+CONFIG_EXISTS=false
+if [ -f /etc/nginx/sites-available/mcpx.lol ]; then
+    # Check if the config has the required upstream and location blocks
+    if grep -q "upstream mcpx" /etc/nginx/sites-available/mcpx.lol && \
+       grep -q "location /mcpx" /etc/nginx/sites-available/mcpx.lol; then
+        CONFIG_EXISTS=true
+        echo -e "${GREEN}✓ nginx configuration already exists${NC}"
+    fi
+fi
+
 # Check if SSL certificate exists
 if [ -d "/etc/letsencrypt/live/$DOMAIN" ]; then
-    echo -e "${GREEN}✓ SSL certificate already exists${NC}"
-    # Install nginx config with SSL
-    cp "$DEPLOY_DIR/deployment/mcpx.lol.nginx.conf" /etc/nginx/sites-available/mcpx.lol
     SSL_CONFIGURED=1
+    if [ "$CONFIG_EXISTS" = false ]; then
+        echo -e "${YELLOW}⚠️  Installing nginx config with SSL support${NC}"
+        # Install nginx config with SSL
+        cp "$DEPLOY_DIR/deployment/mcpx.lol.nginx.conf" /etc/nginx/sites-available/mcpx.lol
+    else
+        echo -e "${GREEN}✓ SSL certificate already exists${NC}"
+    fi
 else
-    echo -e "${YELLOW}⚠️  No SSL certificate found${NC}"
-    # Create temporary HTTP-only nginx config
-    cat > /etc/nginx/sites-available/mcpx.lol << 'NGINXCONF'
+    SSL_CONFIGURED=0
+    if [ "$CONFIG_EXISTS" = false ]; then
+        echo -e "${YELLOW}⚠️  No SSL certificate found - installing HTTP-only config${NC}"
+        # Create temporary HTTP-only nginx config
+        cat > /etc/nginx/sites-available/mcpx.lol << 'NGINXCONF'
+# Upstream for MCP server
+upstream mcpx {
+  server localhost:1337;
+}
+
 server {
     listen 80;
+    listen [::]:80;
     server_name mcpx.lol www.mcpx.lol;
 
     root /data/web/mcpx.lol/public;
     index index.html;
+
+    # Allow Let's Encrypt validation
+    location /.well-known {
+        allow all;
+    }
 
     # Static site
     location / {
@@ -156,8 +230,8 @@ server {
     }
 
     # MCP server proxy
-    location /mcpx/ {
-        proxy_pass http://127.0.0.1:1337/;
+    location /mcpx {
+        proxy_pass http://mcpx/$is_args$args;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -175,14 +249,24 @@ server {
     }
 }
 NGINXCONF
-    SSL_CONFIGURED=0
+    else
+        echo -e "${YELLOW}⚠️  No SSL certificate found${NC}"
+    fi
 fi
 
+# Enable the site
 ln -sf /etc/nginx/sites-available/mcpx.lol /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
-nginx -t
-systemctl reload nginx
-echo -e "${GREEN}✓ nginx configured${NC}\n"
+
+# Test and reload nginx
+if nginx -t 2>/dev/null; then
+    systemctl reload nginx
+    echo -e "${GREEN}✓ nginx configured and reloaded${NC}"
+else
+    echo -e "${YELLOW}⚠️  nginx configuration test failed - please check manually${NC}"
+    echo -e "${YELLOW}   Run: nginx -t${NC}"
+fi
+echo
 
 # Step 10: Install systemd service
 echo -e "${BLUE}[10/10] Setting up systemd service...${NC}"
@@ -245,4 +329,5 @@ else
 fi
 
 echo -e "${GREEN}Installation directory: $DEPLOY_DIR${NC}\n"
+
 
