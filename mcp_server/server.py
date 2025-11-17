@@ -134,22 +134,17 @@ def get_server():
         oauth_app = FastAPI()
         oauth_app.include_router(oauth_router)
         
-        # Create a new Starlette app that combines both
-        # We'll mount OAuth at /oauth and MCP routes at the root
-        combined_app = Starlette(
-            routes=[
-                Mount("/oauth", oauth_app),
-                Mount("/", mcp_app),
-            ]
-        )
+        # Mount the OAuth FastAPI app at /oauth
+        # When mounted at /oauth, requests to /oauth/* get routed to the oauth_app
+        mcp_app.mount("/oauth", oauth_app)
         
-        # Add authentication middleware to the combined app
-        combined_app.add_middleware(AuthenticationMiddleware)
+        # Add authentication middleware
+        mcp_app.add_middleware(AuthenticationMiddleware)
         
         logger.info("OAuth authentication enabled")
         
-        # Store the combined app for access in main
-        mcp._wrapper_app = combined_app
+        # Store the app for access in main (it's the modified mcp_app)
+        mcp._wrapper_app = mcp_app
     else:
         logger.warning("Running in noauth mode - authentication is DISABLED")
     

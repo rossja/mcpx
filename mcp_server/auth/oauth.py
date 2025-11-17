@@ -32,8 +32,8 @@ from .utils import (
 
 logger = logging.getLogger(__name__)
 
-# Create OAuth router
-oauth_router = APIRouter(prefix="/oauth", tags=["oauth"])
+# Create OAuth router (no prefix - will be added when mounting)
+oauth_router = APIRouter(tags=["oauth"])
 
 
 # Pydantic models
@@ -141,7 +141,7 @@ LOGIN_PAGE_HTML = """
 <body>
     <div class="login-container">
         <h1>🔐 MCPX Login</h1>
-        <form method="post" action="/oauth/authorize">
+        <form method="post" action="/authorize">
             <input type="hidden" name="response_type" value="{response_type}">
             <input type="hidden" name="client_id" value="{client_id}">
             <input type="hidden" name="redirect_uri" value="{redirect_uri}">
