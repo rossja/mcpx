@@ -141,7 +141,7 @@ LOGIN_PAGE_HTML = """
 <body>
     <div class="login-container">
         <h1>🔐 MCPX Login</h1>
-        <form method="post" action="/authorize">
+        <form method="post" action="/mcp/oauth/authorize">
             <input type="hidden" name="response_type" value="{response_type}">
             <input type="hidden" name="client_id" value="{client_id}">
             <input type="hidden" name="redirect_uri" value="{redirect_uri}">

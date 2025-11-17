@@ -254,8 +254,8 @@ server {
 
     # MCP server proxy
     location /mcp/ {
-        # The trailing slash strips /mcp prefix, so /mcp/oauth/authorize -> /oauth/authorize
-        proxy_pass http://mcpx/;
+        # No trailing slash - preserves the /mcp prefix
+        proxy_pass http://mcpx;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;

@@ -127,24 +127,27 @@ def get_server():
         
         logger.info("Adding OAuth routes and authentication middleware")
         
-        # Get the MCP Starlette app
+        # FastMCP creates routes at /mcp, so we need to wrap at the root level
+        # Create a new Starlette app that handles both OAuth and MCP routes
+        from fastapi import FastAPI as FastAPIRoot
+        
+        wrapper_app = FastAPIRoot()
+        
+        # Add OAuth routes directly to the wrapper (will be at /mcp/oauth after nginx)
+        wrapper_app.include_router(oauth_router, prefix="/mcp/oauth")
+        
+        # Mount the MCP app (which has routes at /mcp) at root
+        # This makes MCP routes available at /mcp/* 
         mcp_app = mcp.streamable_http_app()
-        
-        # Create a FastAPI app just for OAuth routes
-        oauth_app = FastAPI()
-        oauth_app.include_router(oauth_router)
-        
-        # Mount the OAuth FastAPI app at /oauth
-        # When mounted at /oauth, requests to /oauth/* get routed to the oauth_app
-        mcp_app.mount("/oauth", oauth_app)
+        wrapper_app.mount("/", mcp_app)
         
         # Add authentication middleware
-        mcp_app.add_middleware(AuthenticationMiddleware)
+        wrapper_app.add_middleware(AuthenticationMiddleware)
         
         logger.info("OAuth authentication enabled")
         
-        # Store the app for access in main (it's the modified mcp_app)
-        mcp._wrapper_app = mcp_app
+        # Store the wrapper app for access in main
+        mcp._wrapper_app = wrapper_app
     else:
         logger.warning("Running in noauth mode - authentication is DISABLED")
     

@@ -21,9 +21,9 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, exempt_paths: Optional[list] = None):
         super().__init__(app)
         self.exempt_paths = exempt_paths or [
-            "/oauth/authorize",
-            "/oauth/token",
-            "/oauth/revoke",
+            "/mcp/oauth/authorize",
+            "/mcp/oauth/token",
+            "/mcp/oauth/revoke",
             "/docs",
             "/redoc",
             "/openapi.json",
