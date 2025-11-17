@@ -111,10 +111,10 @@ Expected response: `{"status":"healthy","service":"mcpx"}`
 ### Test Through nginx
 ```bash
 # With SSL
-curl https://yourdomain.com/mcpx/health
+curl https://yourdomain.com/mcp/health
 
 # Or without SSL
-curl http://yourdomain.com/mcpx/health
+curl http://yourdomain.com/mcp/health
 ```
 - [ ] nginx proxy working
 - [ ] Health check accessible externally

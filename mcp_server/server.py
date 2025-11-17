@@ -116,30 +116,40 @@ def get_server():
     # Validate configuration
     config.validate()
     
-    # Get the underlying Starlette ASGI app
-    app = mcp.streamable_http_app()
-    
     # Add OAuth routes if in OAuth mode
     if config.AUTH_MODE == "oauth":
         from fastapi import FastAPI
+        from starlette.applications import Starlette
+        from starlette.routing import Mount, Route
+        from starlette.responses import Response
         from .auth.oauth import oauth_router
         from .auth.middleware import AuthenticationMiddleware
         
         logger.info("Adding OAuth routes and authentication middleware")
         
-        # Create a FastAPI app for OAuth routes
-        # The oauth_router already has /oauth prefix, so mount at root
+        # Get the MCP Starlette app
+        mcp_app = mcp.streamable_http_app()
+        
+        # Create a FastAPI app just for OAuth routes
         oauth_app = FastAPI()
         oauth_app.include_router(oauth_router)
         
-        # Mount the OAuth app onto the Starlette app at root
-        # This preserves the /oauth prefix from the router
-        app.mount("", oauth_app)
+        # Create a new Starlette app that combines both
+        # We'll mount OAuth at /oauth and MCP routes at the root
+        combined_app = Starlette(
+            routes=[
+                Mount("/oauth", oauth_app),
+                Mount("/", mcp_app),
+            ]
+        )
         
-        # Add authentication middleware
-        app.add_middleware(AuthenticationMiddleware)
+        # Add authentication middleware to the combined app
+        combined_app.add_middleware(AuthenticationMiddleware)
         
         logger.info("OAuth authentication enabled")
+        
+        # Store the combined app for access in main
+        mcp._wrapper_app = combined_app
     else:
         logger.warning("Running in noauth mode - authentication is DISABLED")
     

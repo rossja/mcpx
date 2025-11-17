@@ -74,7 +74,7 @@ You should see: `{"status":"healthy","service":"mcpx"}`
 
 Your MCPX server is now running at:
 - **Static site**: `https://yourdomain.com/` (or `http://your-server-ip/`)
-- **MCP API**: `https://yourdomain.com/mcpx/` (or `http://your-server-ip/mcpx/`)
+- **MCP API**: `https://yourdomain.com/mcp/` (or `http://your-server-ip/mcp/`)
 
 ## Common Next Steps
 

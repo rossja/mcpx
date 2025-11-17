@@ -38,7 +38,7 @@ The deployment script will:
 
 2. **MCP Server** → `/data/web/mcpx.lol/`
    - Python application running on port 1337
-   - Accessible at `https://mcpx.lol/mcpx`
+   - Accessible at `https://mcpx.lol/mcp`
    - Managed by systemd service
 
 3. **Configuration Files**
@@ -149,7 +149,7 @@ Test the endpoints:
 curl https://mcpx.lol
 
 # MCP server health check
-curl https://mcpx.lol/mcpx/health
+curl https://mcpx.lol/mcp/health
 ```
 
 ## Updating the Deployment

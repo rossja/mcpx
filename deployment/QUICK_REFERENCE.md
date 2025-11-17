@@ -43,7 +43,7 @@ ssh root@mcpx.lol "sudo systemctl status nginx"
 curl https://mcpx.lol
 
 # MCP server
-curl -X POST https://mcpx.lol/mcpx \
+curl -X POST https://mcpx.lol/mcp \
   -H "Content-Type: application/json" \
   -d '{"jsonrpc":"2.0","method":"tools/list","id":1}'
 ```
@@ -85,7 +85,7 @@ ssh root@mcpx.lol "sudo certbot renew"
 
 ```
 https://mcpx.lol/        → nginx → /data/web/mcpx.lol/public/ (static)
-https://mcpx.lol/mcpx    → nginx → localhost:1337 (MCP server)
+https://mcpx.lol/mcp    → nginx → localhost:1337 (MCP server)
 ```
 
 ## 🐛 Troubleshooting

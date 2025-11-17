@@ -204,7 +204,7 @@ echo -e "   ${BLUE}ssh $HOST 'sudo journalctl -u mcpx.service -f'${NC}"
 echo -e ""
 echo -e "5. Test the deployment:"
 echo -e "   ${BLUE}curl https://$DOMAIN${NC}"
-echo -e "   ${BLUE}curl https://$DOMAIN/mcpx/health${NC}"
+echo -e "   ${BLUE}curl https://$DOMAIN/mcp/health${NC}"
 echo -e ""
 echo -e "${GREEN}Your site should now be live at: https://$DOMAIN${NC}\n"
 

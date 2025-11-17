@@ -29,10 +29,18 @@ def main():
     # Get the server instance
     mcp = get_server()
     
+    # Determine which app to run
+    if config.AUTH_MODE == "oauth" and hasattr(mcp, '_wrapper_app'):
+        app = mcp._wrapper_app
+        logger.info("Running with OAuth wrapper app")
+    else:
+        app = mcp.streamable_http_app()
+        logger.info("Running standard MCP app")
+    
     # Run the server with uvicorn
     import uvicorn
     uvicorn.run(
-        mcp.streamable_http_app(),
+        app,
         host=config.HOST,
         port=config.PORT,
         log_level=config.LOG_LEVEL.lower(),

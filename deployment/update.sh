@@ -165,7 +165,7 @@ echo -e "${BLUE}View Logs:${NC}"
 echo -e "   ${GREEN}journalctl -u mcpx.service -f${NC}\n"
 
 echo -e "${BLUE}Test the Service:${NC}"
-echo -e "   ${GREEN}curl https://$DOMAIN/mcpx/oauth/authorize${NC}\n"
+echo -e "   ${GREEN}curl https://$DOMAIN/mcp/oauth/authorize${NC}\n"
 
 if [ "$UPDATE_FROM_GIT" = false ]; then
     echo -e "${YELLOW}Note: You can delete the temporary clone directory now${NC}"

@@ -253,8 +253,8 @@ server {
     }
 
     # MCP server proxy
-    location /mcpx/ {
-        # The trailing slash strips /mcpx prefix, so /mcpx/oauth/authorize -> /oauth/authorize
+    location /mcp/ {
+        # The trailing slash strips /mcp prefix, so /mcp/oauth/authorize -> /oauth/authorize
         proxy_pass http://mcpx/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
@@ -346,10 +346,10 @@ echo -e "   ${GREEN}sudo systemctl restart mcpx.service${NC}\n"
 echo -e "Test the deployment:"
 if [ $SSL_CONFIGURED -eq 1 ]; then
     echo -e "   ${GREEN}curl https://$DOMAIN${NC}"
-    echo -e "   ${GREEN}curl https://$DOMAIN/mcpx/health${NC}\n"
+    echo -e "   ${GREEN}curl https://$DOMAIN/mcp/health${NC}\n"
 else
     echo -e "   ${GREEN}curl http://$DOMAIN${NC}"
-    echo -e "   ${GREEN}curl http://$DOMAIN/mcpx/health${NC}\n"
+    echo -e "   ${GREEN}curl http://$DOMAIN/mcp/health${NC}\n"
 fi
 
 echo -e "${GREEN}Installation directory: $DEPLOY_DIR${NC}\n"
