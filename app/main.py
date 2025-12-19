@@ -56,6 +56,10 @@ app.include_router(router)
 # or vice versa.
 app.mount("/mcp", mcp_app)
 
-if __name__ == "__main__":
+def main():
+    """Entry point for the mcpx command."""
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=settings.PORT)
+
+if __name__ == "__main__":
+    main()
