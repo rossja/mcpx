@@ -39,6 +39,29 @@ docker build -t mcp-test-server .
 docker run -p 8080:8080 mcp-test-server
 ```
 
+### Heroku Deployment
+
+1. Create a Heroku app and set the stack to container:
+   ```bash
+   heroku create your-app-name --team your-team
+   heroku stack:set container -a your-app-name
+   ```
+
+2. Add the Heroku git remote:
+   ```bash
+   heroku git:remote -a your-app-name
+   ```
+
+3. Create a `.env` file with your configuration (see `env.example`), then set the environment variables:
+   ```bash
+   ./set-env.sh your-app-name
+   ```
+
+4. Deploy:
+   ```bash
+   git push heroku main
+   ```
+
 ## Configuration
 
 The server is configured via environment variables:
