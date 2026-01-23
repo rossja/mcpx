@@ -11,6 +11,7 @@ load_dotenv()
 BASE_URL = os.getenv("MCP_SERVER_URL", "http://localhost:8080")
 if len(sys.argv) > 1:
     BASE_URL = sys.argv[1]
+BASE_URL = BASE_URL.rstrip("/")  # Normalize URL to avoid double slashes
 
 AUTH_MODE = os.getenv("AUTH_MODE", "none").lower()
 AUTH_TOKEN = os.getenv("AUTH_TOKEN", "")
